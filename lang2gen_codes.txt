@@ -1,0 +1,108 @@
+D's Langrisser II Hacking Notes
+
+Control Codes:
+  0x00 - Prefix to Bank #1
+  0x01 - Prefix to Bank #2
+  0x02 - Prefix to Bank #3
+  0x03 - Prefix to Bank #4
+  0xff - Special Controls
+    +0xf4 - Reset Game (to Sega Logo)
+    +0xf7 - Use next WORD for character name lookup
+    +0xf9 - Use next WORD for portrait lookup
+    +0xfb - Clear Window (no wait)
+    +0xfc - Close Window (no wait)
+    +0xfd - Pause and clear window
+    +0xfe - Line Break
+    +0xff - Pause and end window
+
+A prefix must be declared before every byte. Unlike later games, the prefix
+is not a switch into a bank, rather it just states where to draw the byte
+immediatly following it from.
+
+Hardcoded Text:
+  0x5e040 - 1232 bytes, Sound Test titles, 16 bytes per entry
+  0xa3afc - 18 bytes, Erwin's default name
+  0xa6b10 - 136 bytes, Bernhardt's intro, fixed breaking
+  0xa6b98 - 896 bytes, Ending, fixed breaking
+
+ALL POINTERS ARE 32-BIT BIG ENDIAN SINCE THIS IS A 68000 PROCESSOR!
+
+Normal Data Pointers:
+  items   -  0x1066 -  0x10fe
+  system  - 0x82a92 - 0x82aca
+  magic   - 0x82ba2 - 0x82bfe
+  units   - 0x82d1e - 0x82d5a
+  names   - 0x9722c - 0x97400
+  credits - 0xa332a - 0xa341a
+
+Wacky Pointers:
+  items        - Null Strings - 0xa18f2 - 0xa198a
+                 Actual Text  - 0xa149c
+  descriptions - Null Strings - 0xa1d6c - 0xa1e00
+                 Actual Text  - 0xa151e
+
+  prologues    - Null Strings - 0x9cf7c - 0x9cff8
+                 Actual Text  - 0x9b2fc - 0x9b378
+  conditions   - Null Strings - 0x98d7a - 0x98dfa
+                 Actual Text  - 0x986c6 - 0x98746
+
+These pointers use a dummy bank to get string formatting from, then replace
+all 0x00 prefixed WORDs with a byte from the actual text (going in sequence).
+In the first two, Actual Text is a raw data stream. In the second two, it's a
+link to a pointer table.
+
+Scenario Pointers:
+  sc01 - 0x18430A - 122
+  sc02 - 0x18629C - 110
+  sc03 - 0x18830e - 89
+  sc04 - 0x189dac - 132
+  sc05 - 0x18c27e - 79
+  sc06 - 0x18d834 - 102
+  sc07 - 0x18f4c6 - 100
+  sc08 - 0x190f82 - 103
+  sc09 - 0x192e00 - 145
+  sc10 - 0x1956f2 - 108
+  sc11 - 0x19726c - 96
+  sc12 - 0x198fda - 89
+  sc13 - 0x19ab40 - 96
+  sc14 - 0x19c9ce - 126
+  sc15 - 0x19f242 - 109
+  sc16 - 0x1a0cd8 - 87
+  sc17 - 0x1a2290 - 108
+  sc18 - 0x1a4418 - 97
+  sc19 - 0x1a602a - 98
+  sc20 - 0x1a7a7a - 89
+  sc21 - 0x1a9732 - 71
+  sc22 - 0x1aaaf4 - 151
+  sc23 - 0x1ad7a0 - 83
+  sc24 - 0x1af6e4 - 54
+  sc25 - 0x1b05be - 102
+  sc26 - 0x1b21fa - 71
+  sc27 - 0x1b3a6e - 98
+  sc?1 - 0x1b56e0 - 104
+  sc?2 - 0x1b6d00 - 49
+  sc?3 - 0x1b7872 - 65
+  sc?4 - 0x1b8502 - 44
+
+The Scenario Chunk starts at the offset given. Following that are X scenario
+text pointers. A scenario text pointer is 8 bytes. The first WORD is the
+character name to use. The next BYTE is the portrait to use. The BYTE after
+that is where to position the text window. A 32-bit pointer to the string
+follows.
+
+8x8 Text Pointers:
+  classes - 0x5e6d6 - 0x5e94a
+  items   - 0x60364 - 0x603fc
+  names   - 0x618e8 - 0x61abc
+
+Text in the 8x8 banks is terminated by a single 0xFF since the font is only
+one bank.
+
+Fonts:
+  16x16 main - feidian -cr gb16,16,60,0x40000
+  16x16 spells:
+    magic arrow - feidian -cr gb16,5,1,0x4f000
+
+Padding:
+  Rom Size is vald in 4Mbit increments (0x80000). The standard Genesis header
+  is 0x200 bytes.
